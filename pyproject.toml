@@ -1,0 +1,7 @@
+[project]
+name = "nasa-analysis"
+version = "0.1.0"
+description = "An end-to-end data engineering project that collects, transforms, and visualizes NASA space data - tracking near-Earth asteriods, solar flare activity, and historical meteorite impacts."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
