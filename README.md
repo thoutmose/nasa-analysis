@@ -2,6 +2,22 @@
 
 An end-to-end data engineering project that collects, transforms, and visualizes NASA space data — tracking near-Earth asteroids, solar flare activity, and historical meteorite impacts.
 
+## The Modern Data Stack
+
+This project leverages the **Modern Data Stack (MDS)** approach, emphasizing modular, best-in-class tools that are developer-friendly and code-first.
+
+### 🚀 **Apache Airflow** (Orchestration)
+The command center of our data platform. Airflow allows us to author, schedule, and monitor workflows as code.
+- **Why we use it:** To orchestrate the sequence of ingestion, validation, and transformation tasks reliably.
+
+### 📥 **dlt (dlthub)** (Ingestion)
+A Python library for data loading. `dlt` (Data Load Tool) automates the extraction and loading (EL) process, handling complex API responses and schema evolution automatically.
+- **Why we use it:** To streamline loading nested JSON data from NASA APIs into PostgreSQL without manually maintaining schemas.
+
+### 🛠️ **dbt** (Transformation)
+The transformation layer (the "T" in ELT). `dbt` (data build tool) allows us to transform data in the warehouse using SQL.
+- **Why we use it:** To clean, test, and model raw data into analytics-ready tables using modular SQL files and built-in version control.
+
 ## Architecture
 
 ```mermaid
@@ -150,7 +166,7 @@ DBT -.-> MART_PROD
 | Layer | Tool | Version |
 |---|---|---|
 | Orchestration | Apache Airflow (CeleryExecutor) | 3.1.8 |
-| Ingestion | dltHub | — |
+| Ingestion | dltHub | 1.23 |
 | Message Broker | Redis | 7.2 |
 | Data Warehouse | PostgreSQL | 17 |
 | Transformations | dbt Core | — |
