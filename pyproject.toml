@@ -5,6 +5,7 @@ description = "An end-to-end data engineering project that collects, transforms,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "dlt[hub,postgres]>=1.23.0",
+    "dlt[hub,postgres,workspace]>=1.23.0",
     "python-dotenv>=1.2.2",
+    "requests>=2.32.5",
 ]

@@ -219,4 +219,7 @@ __marimo__/
 # Airflow Project
 
 # DLT
-pipelines/.dlt/*
+.dlt
+.claude
+.github
+logs
