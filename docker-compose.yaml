@@ -20,7 +20,8 @@ x-airflow-common: &airflow-common
     AIRFLOW_CONFIG: "/opt/airflow/config/airflow.cfg"
     AIRFLOW_CONN_POSTGRES_DLT: >-
       {"conn_type": "postgres", "host": "${DESTINATION__POSTGRES__CREDENTIALS__HOST}", "login": "${DESTINATION__POSTGRES__CREDENTIALS__USERNAME}", "password": "${DESTINATION__POSTGRES__CREDENTIALS__PASSWORD}", "port": ${DESTINATION__POSTGRES__CREDENTIALS__PORT}, "schema": "${DESTINATION__POSTGRES__CREDENTIALS__DATABASE}"}
-    DLT_LOG_LEVEL: "WARNING"
+    DLT_LOG_LEVEL: "ERROR"
+    DLT__RUNTIME__LOG_LEVEL: "ERROR"
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs

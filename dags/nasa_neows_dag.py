@@ -1,8 +1,26 @@
 from datetime import datetime, timedelta
 from typing import Any
 
-from airflow.sdk import Variable, dag, task
-from airflow.sdk.bases.hook import BaseHook
+from airflow.sdk import Connection, Variable, dag, task
+
+import psycopg2
+from psycopg2 import errors
+import os
+import warnings
+
+os.environ["RUNTIME__LOG_LEVEL"] = "ERROR"
+os.environ["DLT__RUNTIME__LOG_LEVEL"] = "ERROR"
+
+from dlt_pipelines.nasa_neows_pipeline import run_pipeline
+
+warnings.filterwarnings(
+    "ignore", 
+    message=".*Using Variable.get from `airflow.models` is deprecated.*", 
+    category=DeprecationWarning)
+warnings.filterwarnings(
+    "ignore", 
+    message=".*Using Connection.from_json from `airflow.models` is deprecated.*", 
+    category=DeprecationWarning)
 
 default_args: dict[str, Any] = {
     "owner": "data-team",
@@ -34,16 +52,17 @@ def nasa_neows_taskflow() -> None:
 
         Returns a string representation of the dlt LoadInfo object.
         """
-        from dlt_pipelines.nasa_neows_pipeline import run_pipeline
-
         nasa_api_key: str = Variable.get("NASA_API_KEY")
-        print(f"DEBUG: context['ds'] = {context.get('ds')}")
-        print(f"DEBUG: context['data_interval_end'] = {context.get('data_interval_end')}")
+        
+        start_dt = context.get("logical_date")
+        end_dt = context.get("logical_date")
+        if start_dt.date() == end_dt.date():
+            end_dt += timedelta(days=1)
 
         load_info = run_pipeline(
             api_key=nasa_api_key,
-            start_date=context["ds"],
-            end_date=context["data_interval_end"].strftime("%Y-%m-%d"),
+            start_date=start_dt.strftime("%Y-%m-%d"),
+            end_date=end_dt.strftime("%Y-%m-%d"),
         )
         return str(load_info)
 
@@ -60,10 +79,10 @@ def nasa_neows_taskflow() -> None:
         Raises:
             ValueError: If the ``near_earth_objects`` table is empty.
         """
-        import psycopg2
-        from psycopg2 import errors
-
-        pg_conn = BaseHook.get_connection("postgres_dlt")
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=DeprecationWarning)
+            pg_conn = Connection.get("postgres_dlt")
+        
         conn = psycopg2.connect(
             host=pg_conn.host,
             port=pg_conn.port,
@@ -95,10 +114,11 @@ def nasa_neows_taskflow() -> None:
         Returns:
             Number of hazardous objects found.
         """
-        import psycopg2
-        from psycopg2 import errors
-
-        pg_conn = BaseHook.get_connection("postgres_dlt")
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=DeprecationWarning)
+            pg_conn = Connection.get("postgres_dlt")
+        
         conn = psycopg2.connect(
             host=pg_conn.host,
             port=pg_conn.port,

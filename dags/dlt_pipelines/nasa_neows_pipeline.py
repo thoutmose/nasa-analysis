@@ -30,7 +30,6 @@ def neows_source(
     )
     def neo_feed() -> Generator[dict[str, Any]]:
         """Yield one record per near-earth object per observation date."""
-        print(f"DEBUG: neo_feed running with start_date={start_date}, end_date={end_date}")
         current_start = datetime.strptime(start_date, "%Y-%m-%d")
         final_end = datetime.strptime(end_date, "%Y-%m-%d")
 
@@ -42,7 +41,6 @@ def neows_source(
                 "end_date": current_end.strftime("%Y-%m-%d"),
                 "api_key": api_key,
             }
-            print(f"DEBUG: Requesting {params}")
 
             response = requests.get(f"{BASE_URL}/feed", params=params)
             response.raise_for_status()
@@ -51,7 +49,8 @@ def neows_source(
             for _date, neos in data["near_earth_objects"].items():
                 for neo in neos:
                     diameter = neo["estimated_diameter"]["kilometers"]
-                    is_hazardous: bool = neo["is_potentially_hazardous_asteroid"]
+                    is_hazardous: bool = neo[
+                        "is_potentially_hazardous_asteroid"]
                     yield {
                         "id": neo["id"],
                         "neo_reference_id": neo["neo_reference_id"],
@@ -59,9 +58,12 @@ def neows_source(
                         "nasa_jpl_url": neo["nasa_jpl_url"],
                         "absolute_magnitude_h": neo["absolute_magnitude_h"],
                         "is_potentially_hazardous": is_hazardous,
-                        "estimated_diameter_km_min": diameter["estimated_diameter_min"],
-                        "estimated_diameter_km_max": diameter["estimated_diameter_max"],
-                        "close_approach_data": neo.get("close_approach_data", []),
+                        "estimated_diameter_km_min": diameter[
+                            "estimated_diameter_min"],
+                        "estimated_diameter_km_max": diameter[
+                            "estimated_diameter_max"],
+                        "close_approach_data": neo.get(
+                            "close_approach_data", []),
                         "observation_date": _date,
                     }
 
