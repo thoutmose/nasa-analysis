@@ -62,7 +62,6 @@ The system is split into two parallel environments, each running on dedicated Ub
 | :--- | :--- | :--- |
 | **NeoWs** | NASA NeoWs REST API | Near-Earth asteroid close-approach data |
 | **DONKI** | NASA DONKI REST API | Solar flare and space weather events |
-| **APOD** | NASA APOD REST API | Astronomy Picture of the Day metadata |
 | **Meteorite Landings** | CSV (NASA Open Data) | Historical meteorite impact records |
 
 ---
