@@ -217,3 +217,9 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Airflow Project
+
+# DLT
+.dlt
+.claude
+.github
+logs
