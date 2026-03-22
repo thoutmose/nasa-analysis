@@ -2,9 +2,11 @@
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white) ![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=Docker&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-261230.svg?style=for-the-badge&logo=ruff&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white) ![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=Docker&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-261230.svg?style=for-the-badge&logo=ruff&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 
 > **An end-to-end data engineering project that collects, transforms, and visualizes NASA space data — tracking near-Earth asteroids, solar flare activity, and historical meteorite impacts.**
+>
+> **Deployed on a self-hosted infrastructure running on Proxmox.**
 
 </div>
 
@@ -38,9 +40,17 @@ This project leverages the **Modern Data Stack (MDS)** approach, emphasizing mod
 This project implements a **containerized data pipeline** orchestrated with Apache Airflow, supporting both development and production environments with identical structures and isolated infrastructure.
 
 #### 🌍 Environments
-The system is split into two parallel environments, each running on dedicated Ubuntu-based servers and utilizing Docker to ensure consistency, portability, and reproducibility:
+The system is split into two parallel environments, each running on dedicated Ubuntu-based servers (self-hosted on **Proxmox**) and utilizing Docker to ensure consistency, portability, and reproducibility:
 * **Development:**  `srv-airflow-dev`
 * **Production:** `srv-airflow-prod`
+
+#### 🖥️ Infrastructure
+
+<div align="center">
+  <img src="img/nasa_project_infrastructure.png" alt="Infrastructure Diagram" width="800">
+</div>
+
+Four VMs are provisioned on Proxmox. `srv-airflow-dev` and `srv-airflow-prod` each run Airflow as a **non-root user** with an **NGINX reverse proxy** for HTTPS termination; both communicate with `srv-db`, which hosts isolated PostgreSQL instances for dev and prod. `srv-services` is dedicated exclusively to **monitoring and alerting** (infrastructure metrics and DAG processing) and plays no role in the data pipeline.
 
 #### 🔄 Data Pipeline Flow
 1. **Data Sources:** Primary integrations are NASA APIs, with additional internal/third-party files.
@@ -49,8 +59,23 @@ The system is split into two parallel environments, each running on dedicated Ub
 4. **Data Transformation & Testing:** `dbt` models structure the data into refined sets for analytics, enforcing **data quality tests** (uniqueness, non-null, referential integrity).
 5. **Orchestration:** Managed end-to-end by Airflow.
 
+#### 🔁 DAG Pattern
+
+All DAGs share the same standard task structure:
+
+<div align="center">
+  <img src="img/airflow_dag_example.png" alt="Airflow DAG example" width="800">
+</div>
+
+1. **`is_api_available`** *(sensor)* — polls the data source every 30 seconds. Returns the raw response on success, `None` on rate-limit (HTTP 429), or keeps poking on any other failure.
+2. **`check_availability`** *(branch)* — routes execution: proceeds to `extract_and_load` if data was returned, or diverts to `stop` if the source was unavailable/rate-limited.
+3. **`extract_and_load`** — runs the `dlt` pipeline to extract, normalize, and load data into PostgreSQL.
+4. **`stop`** — graceful no-op branch that marks the run as skipped without raising an error.
+
+The average time execution of each DAG takes less than 30 seconds.
+
 #### ⚙️ CI/CD & Operations
-* **Deployment:** Distinct Dev (`dev` branch) and Prod (`main` branch) pipelines triggering automated DAG & dbt model updates.
+* **CI/CD:** GitHub Actions pipeline with three sequential stages — **Lint → Test → Deploy** — triggered on every push or pull request to `main` and `dev`. See [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
 * **Monitoring & Observability:** Metrics handled by **Grafana**, with integrated **Slack** alerting.
 * **Code Quality:** **Ruff** enforces Python linting and formatting across the repository.
 
@@ -61,7 +86,8 @@ The system is split into two parallel environments, each running on dedicated Ub
 | Source | API / File | Description |
 | :--- | :--- | :--- |
 | **NeoWs** | NASA NeoWs REST API | Near-Earth asteroid close-approach data |
-| **DONKI** | NASA DONKI REST API | Solar flare and space weather events |
+| **DONKI — GST** | NASA DONKI REST API | Geomagnetic storm event records |
+| **DONKI — Solar Flare** | NASA DONKI REST API | Solar flare activity and intensity data |
 | **Meteorite Landings** | CSV (NASA Open Data) | Historical meteorite impact records |
 
 ---
@@ -78,6 +104,7 @@ The system is split into two parallel environments, each running on dedicated Ub
 | **Code Quality** | Ruff | `0.15.7` |
 | **DB Administration** | PgAdmin | `4.9.13` |
 | **Monitoring** | Grafana | `12.4.1` |
+| **CI/CD** | GitHub Actions | — |
 | **Language** | Python | `≥ 3.13` |
 
 ---
@@ -87,9 +114,13 @@ The system is split into two parallel environments, each running on dedicated Ub
 ```text
 nasa-analysis/                     # Root project directory for NASA data analysis
 .
-├── .dlt                           # DLT (Data Load Tool) configuration directory
-│   ├── config.toml                # DLT configuration file (pipeline settings)
-│   └── secrets.toml               # DLT secrets file (credentials, API keys)
+├── .github                        # GitHub configuration
+│   ├── instructions               # Copilot instructions
+│   └── workflows
+│       └── ci-cd.yml              # GitHub Actions CI/CD pipeline
+├── .dlt                           # DLT (Data Load Tool) configuration directory               [gitignored]
+│   ├── config.toml                # DLT configuration file (pipeline settings)                 [gitignored]
+│   └── secrets.toml               # DLT secrets file (credentials, API keys)                   [gitignored]
 ├── .env.example                   # Example environment variables file
 ├── .gitignore                     # Specifies files/dirs to ignore in Git
 ├── .python-version                # Python version specification (for pyenv)
@@ -99,19 +130,51 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   └── airflow_local_settings.py  # Custom Airflow settings
 ├── dags                           # Airflow DAGs directory
 │   ├── dlt_pipelines              # Subdirectory for DLT pipeline definitions
-│   │   └── nasa_neows_pipeline.py # NASA Near Earth Object Web Service pipeline
-│   └── nasa_neows_dag.py          # Airflow DAG for NASA NEOWS data
+│   │   ├── nasa_donki_gst_pipeline.py                # DONKI Geomagnetic Storm pipeline
+│   │   ├── nasa_donki_solar_flare_pipeline.py        # DONKI Solar Flare pipeline
+│   │   ├── nasa_meteorite_landings_dataset_pipeline.py # Meteorite Landings pipeline
+│   │   └── nasa_neows_pipeline.py                    # Near Earth Object Web Service pipeline
+│   ├── nasa_donki_gst_dag.py                         # Airflow DAG for DONKI GST data
+│   ├── nasa_donki_solar_flare_dag.py                 # Airflow DAG for DONKI Solar Flare data
+│   ├── nasa_meteorite_landings_dataset_dag.py        # Airflow DAG for Meteorite Landings data
+│   └── nasa_neows_dag.py                             # Airflow DAG for NASA NeoWs data
 ├── docker-compose.yaml            # Docker Compose configuration for services
 ├── img                            # Image assets directory
-│   └── nasa_data_engineering_project.png  # Project diagram/image
+│   ├── airflow_dag_example.png            # Example Airflow DAG screenshot
+│   ├── nasa_data_engineering_project.png  # Project architecture diagram
+│   └── nasa_project_infrastructure.png    # Infrastructure diagram
 ├── pyproject.toml                 # Python project configuration (build system, tools)
 ├── logs                           # Logging files
-├── requirements.txt               # Python dependencies
-├── utils                          # Utility scripts directory
+├── requirements.txt               # Python dependencies├── tests                          # Unit tests (pytest)
+│   ├── test_donki_gst_pipeline.py
+│   ├── test_donki_solar_flare_pipeline.py
+│   ├── test_meteorite_pipeline.py
+│   └── test_neows_pipeline.py├── utils                          # Utility scripts directory
 │   ├── build.sh                   # Build automation script
 │   └── linting.sh                 # Code linting script
 └── uv.lock                        # Lock file for UV package manager (Python)
 ```
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+The project uses **GitHub Actions** ([`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)) with three sequential jobs triggered on every push or pull request to `main` and `dev`:
+
+| Step | Job | What it does |
+| :---: | :--- | :--- |
+| 1 | **Lint** | Runs `ruff check` and `ruff format --check` on the `dags/` directory. Fails fast on any style or lint error. |
+| 2 | **Test** | Runs `pytest tests/ -v` (19 tests). Only executes if lint passes. |
+| 3 | **Deploy** | SSHes into the target server, runs `git pull` and `utils/build.sh`. Only runs on direct pushes (not PRs). Automatically selects `.env.dev` on `dev` and `.env.prod` on `main`. |
+
+**Required GitHub repository secrets for deploy:**
+
+| Secret | Description |
+| :--- | :--- |
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USERNAME` | SSH user on the server |
+| `SSH_PRIVATE_KEY` | Private key for SSH authentication |
+| `DEPLOY_PATH` | Absolute path to the project on the server |
 
 ---
 
@@ -188,6 +251,11 @@ bash utils/build.sh --volumes --networks # remove all volumes and network and cr
 ```bash
 ruff check .
 ruff format .
+```
+
+**Run the unit tests:**
+```bash
+uv run pytest tests/ -v
 ```
 
 **Trigger dbt transformations manually:**

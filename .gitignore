@@ -221,5 +221,5 @@ __marimo__/
 # DLT
 .dlt
 .claude
-.github
+.github/instructions
 logs

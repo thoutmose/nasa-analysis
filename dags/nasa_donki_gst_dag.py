@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 import requests
 
-from dlt_pipelines.nasa_neows_pipeline import run_pipeline
+from dlt_pipelines.nasa_donki_gst_pipeline import run_pipeline
 
 
 load_dotenv()
@@ -22,19 +22,20 @@ default_args: dict[str, Any] = {
 
 
 @dag(
-    dag_id="nasa_neows_dlt_pipeline_airflow_dag",
+    dag_id="nasa_donki_gst_dlt_pipeline_airflow_dag",
     default_args=default_args,
     schedule="@daily",
     start_date=datetime(2024, 1, 1),
     catchup=False,
-    tags=["nasa", "neows", "dlt", "data-ingestion", "airflow", "dag"],
+    tags=["nasa", "donki", "gst", "dlt", "data-ingestion", "airflow", "dag"],
 )
-def nasa_neows_taskflow() -> None:
+def nasa_donki_gst_taskflow() -> None:
     @task.sensor(poke_interval=30, timeout=3600, mode="poke")
     def is_api_available() -> PokeReturnValue:
         try:
             response = requests.get(
-                "https://api.nasa.gov/neo/rest/v1/feed",
+                "https://api.nasa.gov/DONKI/GST?startDate=2016-01-01"
+                "&endDate=2016-01-30",
                 params={"api_key": os.getenv("NASA_API_KEY")},
                 timeout=10,
             )
@@ -42,8 +43,6 @@ def nasa_neows_taskflow() -> None:
                 condition_met = True
                 operator_return_value = response.json()
             elif response.status_code == 429:
-                # If rate limited, stop poking immediately and pass None to
-                # trigger the 'stop' branch
                 condition_met = True
                 operator_return_value = None
             else:
@@ -81,4 +80,4 @@ def nasa_neows_taskflow() -> None:
 
 
 # Instantiate the DAG
-nasa_neows_dag = nasa_neows_taskflow()
+dag_instance = nasa_donki_gst_taskflow()

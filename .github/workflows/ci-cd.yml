@@ -1,0 +1,62 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run ruff check
+        run: uv run --with ruff ruff check dags/
+
+      - name: Run ruff format check
+        run: uv run --with ruff ruff format --check dags/
+
+  test:
+    name: Test
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run tests
+        run: uv run --with pytest pytest tests/ -v
+
+  open-pr:
+    name: Open PR to main
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create PR dev → main
+        run: |
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "Deploy: dev → main" \
+            --body "All CI checks passed on \`dev\`. This PR was auto-generated." \
+            || echo "PR already exists or no changes to merge."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

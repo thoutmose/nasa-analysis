@@ -10,3 +10,13 @@ dependencies = [
     "requests>=2.32.5",
     "ruff>=0.15.7",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-mock>=3.14.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["dags"]
+testpaths = ["tests"]
