@@ -39,10 +39,32 @@ jobs:
       - name: Run tests
         run: uv run --with pytest pytest tests/ -v
 
+  open-pr:
+    name: Open PR to main
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create PR dev → main
+        run: |
+          gh pr create \
+            --base main \
+            --head dev \
+            --title "Deploy: dev → main" \
+            --body "All CI checks passed on \`dev\`. This PR was auto-generated." \
+            || echo "PR already exists or no changes to merge."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   deploy:
     name: Deploy
     needs: test
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
@@ -53,5 +75,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ${{ secrets.DEPLOY_PATH }}
-            git pull origin ${{ github.ref_name }}
+            git pull origin main
             bash utils/build.sh
