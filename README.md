@@ -5,6 +5,8 @@
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white) ![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=Docker&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-261230.svg?style=for-the-badge&logo=ruff&logoColor=white)
 
 > **An end-to-end data engineering project that collects, transforms, and visualizes NASA space data — tracking near-Earth asteroids, solar flare activity, and historical meteorite impacts.**
+>
+> **Deployed on a self-hosted infrastructure running on Proxmox.**
 
 </div>
 
@@ -38,9 +40,17 @@ This project leverages the **Modern Data Stack (MDS)** approach, emphasizing mod
 This project implements a **containerized data pipeline** orchestrated with Apache Airflow, supporting both development and production environments with identical structures and isolated infrastructure.
 
 #### 🌍 Environments
-The system is split into two parallel environments, each running on dedicated Ubuntu-based servers and utilizing Docker to ensure consistency, portability, and reproducibility:
+The system is split into two parallel environments, each running on dedicated Ubuntu-based servers (self-hosted on **Proxmox**) and utilizing Docker to ensure consistency, portability, and reproducibility:
 * **Development:**  `srv-airflow-dev`
 * **Production:** `srv-airflow-prod`
+
+#### 🖥️ Infrastructure
+
+<div align="center">
+  <img src="img/nasa_project_infrastructure.png" alt="Infrastructure Diagram" width="800">
+</div>
+
+Four VMs are provisioned on Proxmox. `srv-airflow-dev` and `srv-airflow-prod` each run Airflow as a **non-root user** with an **NGINX reverse proxy** for HTTPS termination; both communicate with `srv-db`, which hosts isolated PostgreSQL instances for dev and prod. `srv-services` is dedicated exclusively to **monitoring and alerting** (infrastructure metrics and DAG processing) and plays no role in the data pipeline.
 
 #### 🔄 Data Pipeline Flow
 1. **Data Sources:** Primary integrations are NASA APIs, with additional internal/third-party files.
@@ -61,7 +71,8 @@ The system is split into two parallel environments, each running on dedicated Ub
 | Source | API / File | Description |
 | :--- | :--- | :--- |
 | **NeoWs** | NASA NeoWs REST API | Near-Earth asteroid close-approach data |
-| **DONKI** | NASA DONKI REST API | Solar flare and space weather events |
+| **DONKI — GST** | NASA DONKI REST API | Geomagnetic storm event records |
+| **DONKI — Solar Flare** | NASA DONKI REST API | Solar flare activity and intensity data |
 | **Meteorite Landings** | CSV (NASA Open Data) | Historical meteorite impact records |
 
 ---
@@ -87,9 +98,9 @@ The system is split into two parallel environments, each running on dedicated Ub
 ```text
 nasa-analysis/                     # Root project directory for NASA data analysis
 .
-├── .dlt                           # DLT (Data Load Tool) configuration directory
-│   ├── config.toml                # DLT configuration file (pipeline settings)
-│   └── secrets.toml               # DLT secrets file (credentials, API keys)
+├── .dlt                           # DLT (Data Load Tool) configuration directory               [gitignored]
+│   ├── config.toml                # DLT configuration file (pipeline settings)                 [gitignored]
+│   └── secrets.toml               # DLT secrets file (credentials, API keys)                   [gitignored]
 ├── .env.example                   # Example environment variables file
 ├── .gitignore                     # Specifies files/dirs to ignore in Git
 ├── .python-version                # Python version specification (for pyenv)
@@ -99,8 +110,14 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   └── airflow_local_settings.py  # Custom Airflow settings
 ├── dags                           # Airflow DAGs directory
 │   ├── dlt_pipelines              # Subdirectory for DLT pipeline definitions
-│   │   └── nasa_neows_pipeline.py # NASA Near Earth Object Web Service pipeline
-│   └── nasa_neows_dag.py          # Airflow DAG for NASA NEOWS data
+│   │   ├── nasa_donki_gst_pipeline.py                # DONKI Geomagnetic Storm pipeline
+│   │   ├── nasa_donki_solar_flare_pipeline.py        # DONKI Solar Flare pipeline
+│   │   ├── nasa_meteorite_landings_dataset_pipeline.py # Meteorite Landings pipeline
+│   │   └── nasa_neows_pipeline.py                    # Near Earth Object Web Service pipeline
+│   ├── nasa_donki_gst_dag.py                         # Airflow DAG for DONKI GST data
+│   ├── nasa_donki_solar_flare_dag.py                 # Airflow DAG for DONKI Solar Flare data
+│   ├── nasa_meteorite_landings_dataset_dag.py        # Airflow DAG for Meteorite Landings data
+│   └── nasa_neows_dag.py                             # Airflow DAG for NASA NeoWs data
 ├── docker-compose.yaml            # Docker Compose configuration for services
 ├── img                            # Image assets directory
 │   └── nasa_data_engineering_project.png  # Project diagram/image
