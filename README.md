@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white) ![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=Docker&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-261230.svg?style=for-the-badge&logo=ruff&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/postgresql-4169e1?style=for-the-badge&logo=postgresql&logoColor=white) ![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white) ![Docker Compose](https://img.shields.io/badge/Docker%20Compose-2496ED?style=for-the-badge&logo=Docker&logoColor=white) ![Grafana](https://img.shields.io/badge/grafana-%23F46800.svg?style=for-the-badge&logo=grafana&logoColor=white) ![Ruff](https://img.shields.io/badge/Ruff-261230.svg?style=for-the-badge&logo=ruff&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
 
 > **An end-to-end data engineering project that collects, transforms, and visualizes NASA space data — tracking near-Earth asteroids, solar flare activity, and historical meteorite impacts.**
 >
@@ -75,7 +75,7 @@ All DAGs share the same standard task structure:
 The average time execution of each DAG takes less than 30 seconds.
 
 #### ⚙️ CI/CD & Operations
-* **Deployment:** Distinct Dev (`dev` branch) and Prod (`main` branch) pipelines triggering automated DAG & dbt model updates.
+* **CI/CD:** GitHub Actions pipeline with three sequential stages — **Lint → Test → Deploy** — triggered on every push or pull request to `main` and `dev`. See [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
 * **Monitoring & Observability:** Metrics handled by **Grafana**, with integrated **Slack** alerting.
 * **Code Quality:** **Ruff** enforces Python linting and formatting across the repository.
 
@@ -104,6 +104,7 @@ The average time execution of each DAG takes less than 30 seconds.
 | **Code Quality** | Ruff | `0.15.7` |
 | **DB Administration** | PgAdmin | `4.9.13` |
 | **Monitoring** | Grafana | `12.4.1` |
+| **CI/CD** | GitHub Actions | — |
 | **Language** | Python | `≥ 3.13` |
 
 ---
@@ -113,6 +114,10 @@ The average time execution of each DAG takes less than 30 seconds.
 ```text
 nasa-analysis/                     # Root project directory for NASA data analysis
 .
+├── .github                        # GitHub configuration
+│   ├── instructions               # Copilot instructions
+│   └── workflows
+│       └── ci-cd.yml              # GitHub Actions CI/CD pipeline
 ├── .dlt                           # DLT (Data Load Tool) configuration directory               [gitignored]
 │   ├── config.toml                # DLT configuration file (pipeline settings)                 [gitignored]
 │   └── secrets.toml               # DLT secrets file (credentials, API keys)                   [gitignored]
@@ -140,12 +145,36 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   └── nasa_project_infrastructure.png    # Infrastructure diagram
 ├── pyproject.toml                 # Python project configuration (build system, tools)
 ├── logs                           # Logging files
-├── requirements.txt               # Python dependencies
-├── utils                          # Utility scripts directory
+├── requirements.txt               # Python dependencies├── tests                          # Unit tests (pytest)
+│   ├── test_donki_gst_pipeline.py
+│   ├── test_donki_solar_flare_pipeline.py
+│   ├── test_meteorite_pipeline.py
+│   └── test_neows_pipeline.py├── utils                          # Utility scripts directory
 │   ├── build.sh                   # Build automation script
 │   └── linting.sh                 # Code linting script
 └── uv.lock                        # Lock file for UV package manager (Python)
 ```
+
+---
+
+## ⚙️ CI/CD Pipeline
+
+The project uses **GitHub Actions** ([`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml)) with three sequential jobs triggered on every push or pull request to `main` and `dev`:
+
+| Step | Job | What it does |
+| :---: | :--- | :--- |
+| 1 | **Lint** | Runs `ruff check` and `ruff format --check` on the `dags/` directory. Fails fast on any style or lint error. |
+| 2 | **Test** | Runs `pytest tests/ -v` (19 tests). Only executes if lint passes. |
+| 3 | **Deploy** | SSHes into the target server, runs `git pull` and `utils/build.sh`. Only runs on direct pushes (not PRs). Automatically selects `.env.dev` on `dev` and `.env.prod` on `main`. |
+
+**Required GitHub repository secrets for deploy:**
+
+| Secret | Description |
+| :--- | :--- |
+| `SSH_HOST` | Server IP or hostname |
+| `SSH_USERNAME` | SSH user on the server |
+| `SSH_PRIVATE_KEY` | Private key for SSH authentication |
+| `DEPLOY_PATH` | Absolute path to the project on the server |
 
 ---
 
@@ -222,6 +251,11 @@ bash utils/build.sh --volumes --networks # remove all volumes and network and cr
 ```bash
 ruff check .
 ruff format .
+```
+
+**Run the unit tests:**
+```bash
+uv run pytest tests/ -v
 ```
 
 **Trigger dbt transformations manually:**

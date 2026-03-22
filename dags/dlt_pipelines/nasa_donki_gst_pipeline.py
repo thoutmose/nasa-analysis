@@ -1,5 +1,6 @@
 from __future__ import annotations
 import logging
+from typing import Any, Optional
 
 import dlt
 from dlt.common.pendulum import pendulum
