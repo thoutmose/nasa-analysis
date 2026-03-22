@@ -120,7 +120,8 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   └── nasa_neows_dag.py                             # Airflow DAG for NASA NeoWs data
 ├── docker-compose.yaml            # Docker Compose configuration for services
 ├── img                            # Image assets directory
-│   └── nasa_data_engineering_project.png  # Project diagram/image
+│   ├── nasa_data_engineering_project.png  # Project diagram/image
+│   └── nasa_project_infrastructure.png    # Project diagram/image
 ├── pyproject.toml                 # Python project configuration (build system, tools)
 ├── logs                           # Logging files
 ├── requirements.txt               # Python dependencies
