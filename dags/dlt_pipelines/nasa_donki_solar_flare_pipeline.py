@@ -4,10 +4,7 @@ from typing import Any, Optional
 
 import dlt
 from dlt.common.pendulum import pendulum
-from dlt.sources.rest_api import (
-    RESTAPIConfig,
-    rest_api_source
-)
+from dlt.sources.rest_api import RESTAPIConfig, rest_api_source
 
 
 logger = logging.getLogger(__name__)
@@ -17,12 +14,10 @@ def _validate_date_range(start_date: str, end_date: str) -> None:
     start = pendulum.parse(start_date)
     end = pendulum.parse(end_date)
     if end < start:
-        raise ValueError(
-            f"end_date ({end_date}) is before start_date ({start_date})")
+        raise ValueError(f"end_date ({end_date}) is before start_date ({start_date})")
     if (end - start).days > 7:
         raise ValueError(
-            "Date range exceeds NASA DONKI 7-day limit:"
-            f" {(end - start).days} days"
+            f"Date range exceeds NASA DONKI 7-day limit: {(end - start).days} days"
         )
 
 
@@ -30,16 +25,16 @@ def _validate_date_range(start_date: str, end_date: str) -> None:
 def nasa_donki_source(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    api_key: str = dlt.secrets.value
+    api_key: str = dlt.secrets.value,
 ) -> Any:
     """
-    A DLT source for NASA's DONKI (Space Weather Database Of Notifications, 
+    A DLT source for NASA's DONKI (Space Weather Database Of Notifications,
     Knowledge, Information).
 
     Args:
         start_date (str): The start date for the data in YYYY-MM-DD format.
         end_date (str): The end date for the data in YYYY-MM-DD format.
-        api_key (str): Your NASA API key. Defaults to the value of the 
+        api_key (str): Your NASA API key. Defaults to the value of the
         "NASA_API_KEY" secret.
 
     Returns:
@@ -77,8 +72,9 @@ def nasa_donki_source(
         ],
     }
     source = rest_api_source(config)
-    
+
     return source
+
 
 def run_pipeline() -> Any:
     pipeline = dlt.pipeline(
@@ -86,7 +82,7 @@ def run_pipeline() -> Any:
         destination="postgres",
         dataset_name="nasa_db",
     )
-    
+
     load_info = pipeline.run(nasa_donki_source())
     logger.info(load_info)
     return load_info

@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
-import os
 from typing import Any
 
-from airflow.sdk import Connection, Variable, dag, task
+from airflow.sdk import dag, task
 from airflow.sdk.bases.sensor import PokeReturnValue
 
 from dotenv import load_dotenv
@@ -27,19 +26,16 @@ default_args: dict[str, Any] = {
     schedule="@yearly",
     start_date=datetime(2024, 1, 1),
     catchup=False,
-    tags=[
-        "nasa", "meteorite", "landings", "dlt", "data-ingestion", "airflow", 
-        "dag"],
+    tags=["nasa", "meteorite", "landings", "dlt", "data-ingestion", "airflow", "dag"],
 )
 def nasa_meteorite_landings_taskflow() -> None:
     @task.sensor(poke_interval=30, timeout=3600, mode="poke")
     def is_api_available() -> PokeReturnValue:
-        import requests
-
         try:
             url: str = (
                 "https://data.nasa.gov/docs/legacy/meteorite_landings"
-                "/Meteorite_Landings.csv")
+                "/Meteorite_Landings.csv"
+            )
             response = requests.get(url, timeout=10)
             if response.status_code == 200:
                 condition_met = True
@@ -51,8 +47,8 @@ def nasa_meteorite_landings_taskflow() -> None:
                 condition_met = False
                 operator_return_value = None
             return PokeReturnValue(
-                is_done=condition_met, 
-                xcom_value=operator_return_value)
+                is_done=condition_met, xcom_value=operator_return_value
+            )
         except requests.RequestException:
             return PokeReturnValue(is_done=False, xcom_value=None)
 

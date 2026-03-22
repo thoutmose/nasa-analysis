@@ -12,31 +12,32 @@ from dlt.sources.rest_api import (
 
 logger = logging.getLogger(__name__)
 
+
 def _validate_date_range(start_date: str, end_date: str) -> None:
     start = pendulum.parse(start_date)
     end = pendulum.parse(end_date)
     if end < start:
-        raise ValueError(
-            f"end_date ({end_date}) is before start_date ({start_date})")
+        raise ValueError(f"end_date ({end_date}) is before start_date ({start_date})")
     if (end - start).days > 7:
         raise ValueError(
-            "Date range exceeds NASA NEOWs 7-day limit:"
-            f" {(end - start).days} days"
+            f"Date range exceeds NASA NEOWs 7-day limit: {(end - start).days} days"
         )
+
 
 @dlt.source(name="nasa_neows")
 def nasa_neows_source(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    api_key: str = dlt.secrets.value) -> Any:
+    api_key: str = dlt.secrets.value,
+) -> Any:
     """
-    A source that retrieves data from the NASA Near Earth Object Web Service 
+    A source that retrieves data from the NASA Near Earth Object Web Service
     (NEOWS) API.
 
     Args:
-        start_date (str, optional): The start date for the data retrieval in 
+        start_date (str, optional): The start date for the data retrieval in
         'YYYY-MM-DD' format. Defaults to 7 days ago.
-        end_date (str, optional): The end date for the data retrieval in 
+        end_date (str, optional): The end date for the data retrieval in
         'YYYY-MM-DD' format. Defaults to today.
         api_key (str, optional): Your NASA API key. Resolves from dlt secrets.
 
@@ -60,7 +61,7 @@ def nasa_neows_source(
             {
                 # The name of the resource in the destination (e.g., table name)
                 "name": "nasa_neows_response",
-                # The write disposition determines how data is written to the 
+                # The write disposition determines how data is written to the
                 # destination. ('merge', 'replace', 'append')
                 "write_disposition": "merge",
                 # The primary key is used to identify unique records for merging
@@ -73,7 +74,7 @@ def nasa_neows_source(
                         "api_key": api_key,
                     },
                     "paginator": "single_page",
-                    # The data selector is a JSONPath expression that specifies 
+                    # The data selector is a JSONPath expression that specifies
                     # where to find the data within the API response
                     # $: root of the JSON response
                     # .: access a child element
@@ -86,8 +87,9 @@ def nasa_neows_source(
         ],
     }
     source = rest_api_source(config)
-    
+
     return source
+
 
 def run_pipeline() -> Any:
     pipeline = dlt.pipeline(
@@ -95,7 +97,7 @@ def run_pipeline() -> Any:
         destination="postgres",
         dataset_name="nasa_db",
     )
-    
+
     load_info = pipeline.run(nasa_neows_source())
     logger.info(load_info)
     return load_info
