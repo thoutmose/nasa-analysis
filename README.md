@@ -59,6 +59,21 @@ Four VMs are provisioned on Proxmox. `srv-airflow-dev` and `srv-airflow-prod` ea
 4. **Data Transformation & Testing:** `dbt` models structure the data into refined sets for analytics, enforcing **data quality tests** (uniqueness, non-null, referential integrity).
 5. **Orchestration:** Managed end-to-end by Airflow.
 
+#### 🔁 DAG Pattern
+
+All DAGs share the same standard task structure:
+
+<div align="center">
+  <img src="img/airflow_dag_example.png" alt="Airflow DAG example" width="800">
+</div>
+
+1. **`is_api_available`** *(sensor)* — polls the data source every 30 seconds. Returns the raw response on success, `None` on rate-limit (HTTP 429), or keeps poking on any other failure.
+2. **`check_availability`** *(branch)* — routes execution: proceeds to `extract_and_load` if data was returned, or diverts to `stop` if the source was unavailable/rate-limited.
+3. **`extract_and_load`** — runs the `dlt` pipeline to extract, normalize, and load data into PostgreSQL.
+4. **`stop`** — graceful no-op branch that marks the run as skipped without raising an error.
+
+The average time execution of each DAG takes less than 30 seconds.
+
 #### ⚙️ CI/CD & Operations
 * **Deployment:** Distinct Dev (`dev` branch) and Prod (`main` branch) pipelines triggering automated DAG & dbt model updates.
 * **Monitoring & Observability:** Metrics handled by **Grafana**, with integrated **Slack** alerting.
@@ -120,8 +135,9 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   └── nasa_neows_dag.py                             # Airflow DAG for NASA NeoWs data
 ├── docker-compose.yaml            # Docker Compose configuration for services
 ├── img                            # Image assets directory
-│   ├── nasa_data_engineering_project.png  # Project diagram/image
-│   └── nasa_project_infrastructure.png    # Project diagram/image
+│   ├── airflow_dag_example.png            # Example Airflow DAG screenshot
+│   ├── nasa_data_engineering_project.png  # Project architecture diagram
+│   └── nasa_project_infrastructure.png    # Infrastructure diagram
 ├── pyproject.toml                 # Python project configuration (build system, tools)
 ├── logs                           # Logging files
 ├── requirements.txt               # Python dependencies
