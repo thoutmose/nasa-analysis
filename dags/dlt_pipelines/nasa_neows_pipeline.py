@@ -93,10 +93,9 @@ def run_pipeline() -> Any:
     pipeline = dlt.pipeline(
         pipeline_name="nasa_neows",
         destination="postgres",
-        dataset_name="nasa_neows",
+        dataset_name="nasa_db",
     )
     
     load_info = pipeline.run(nasa_neows_source())
     logger.info(load_info)
-    return load_info
     return load_info
