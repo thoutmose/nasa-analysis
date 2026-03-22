@@ -62,7 +62,6 @@ The system is split into two parallel environments, each running on dedicated Ub
 | :--- | :--- | :--- |
 | **NeoWs** | NASA NeoWs REST API | Near-Earth asteroid close-approach data |
 | **DONKI** | NASA DONKI REST API | Solar flare and space weather events |
-| **APOD** | NASA APOD REST API | Astronomy Picture of the Day metadata |
 | **Meteorite Landings** | CSV (NASA Open Data) | Historical meteorite impact records |
 
 ---
@@ -86,16 +85,32 @@ The system is split into two parallel environments, each running on dedicated Ub
 ## 📁 Project Structure
 
 ```text
-nasa-analysis/
-├── config/               # Airflow configuration files
-├── dags/                 # Airflow DAG definitions
-├── logs/                 # Airflow task logs (gitignored)
-├── plugins/              # Custom Airflow plugins
-├── utils/
-│   └── build.sh          # Environment-aware startup script
-├── docker-compose.yaml   # All services definition
-├── pyproject.toml        # Dependencies and Ruff config
-└── requirements.txt      # Root requirements
+nasa-analysis/                     # Root project directory for NASA data analysis
+.
+├── .dlt                           # DLT (Data Load Tool) configuration directory
+│   ├── config.toml                # DLT configuration file (pipeline settings)
+│   └── secrets.toml               # DLT secrets file (credentials, API keys)
+├── .env.example                   # Example environment variables file
+├── .gitignore                     # Specifies files/dirs to ignore in Git
+├── .python-version                # Python version specification (for pyenv)
+├── README.md                      # Project documentation
+├── config                         # Airflow configuration directory
+│   ├── airflow.cfg                # Airflow main configuration file
+│   └── airflow_local_settings.py  # Custom Airflow settings
+├── dags                           # Airflow DAGs directory
+│   ├── dlt_pipelines              # Subdirectory for DLT pipeline definitions
+│   │   └── nasa_neows_pipeline.py # NASA Near Earth Object Web Service pipeline
+│   └── nasa_neows_dag.py          # Airflow DAG for NASA NEOWS data
+├── docker-compose.yaml            # Docker Compose configuration for services
+├── img                            # Image assets directory
+│   └── nasa_data_engineering_project.png  # Project diagram/image
+├── pyproject.toml                 # Python project configuration (build system, tools)
+├── logs                           # Logging files
+├── requirements.txt               # Python dependencies
+├── utils                          # Utility scripts directory
+│   ├── build.sh                   # Build automation script
+│   └── linting.sh                 # Code linting script
+└── uv.lock                        # Lock file for UV package manager (Python)
 ```
 
 ---
