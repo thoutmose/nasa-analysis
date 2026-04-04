@@ -101,7 +101,7 @@ Le temps d'exécution moyen de chaque DAG est inférieur à 30 secondes.
 | **Orchestration** | Apache Airflow (CeleryExecutor) | `3.1.8` |
 | **Ingestion** | dltHub | `1.23` |
 | **Entrepôt de données** | PostgreSQL | `17` |
-| **Transformations** | dbt Core | `1.11.7` |
+| **Transformations** | dbt Fusion | `1.0.0.40.15` |
 | **Broker de messages** | Redis | `7.2` |
 | **Qualité du code** | Ruff | `0.15.7` |
 | **Administration BDD** | PgAdmin | `4.9.13` |
@@ -141,6 +141,23 @@ nasa-analysis/                     # Répertoire racine du projet d'analyse NASA
 │   ├── nasa_donki_solar_flare_dag.py                 # DAG Airflow pour les données DONKI Solar Flare
 │   ├── nasa_meteorite_landings_dataset_dag.py        # DAG Airflow pour les données Meteorite Landings
 │   └── nasa_neows_dag.py                             # DAG Airflow pour les données NASA NeoWs
+├── dbt_nasa                       # Répertoire du projet dbt Fusion
+│   ├── dbt_project.yml            # Configuration du projet dbt
+│   ├── package-lock.yml           # Fichier de verrouillage des packages dbt
+│   ├── packages.yml               # Dépendances des packages dbt
+│   ├── macros                     # Définitions des macros dbt
+│   ├── models                     # Modèles SQL dbt
+│   │   ├── staging                # Modèles de staging (matérialisés en vues)
+│   │   │   ├── stg__nasa_donki_gst.sql
+│   │   │   ├── stg__nasa_donki_solar_flare.sql
+│   │   │   ├── stg__nasa_meteorite_landings.sql
+│   │   │   └── stg__nasa_neows.sql
+│   │   └── marts                  # Modèles marts (matérialisés en tables)
+│   │       ├── mart__nasa_donki_gst.sql
+│   │       ├── mart__nasa_donki_solar_flare.sql
+│   │       ├── mart__nasa_meteorite_landings.sql
+│   │       └── mart__nasa_neows.sql
+│   └── dbt_packages               # Packages dbt installés                               [gitignored]
 ├── docker-compose.yaml            # Configuration Docker Compose pour les services
 ├── img                            # Répertoire des ressources images
 │   ├── airflow_dag_example.png            # Capture d'écran d'exemple de DAG Airflow
@@ -159,6 +176,75 @@ nasa-analysis/                     # Répertoire racine du projet d'analyse NASA
 │   └── linting.sh                 # Script de linting du code
 └── uv.lock                        # Fichier de verrouillage du gestionnaire de paquets UV
 ```
+
+---
+
+## 🏛️ dbt — Transformations
+
+Le projet `dbt_nasa/` utilise **dbt Fusion** et suit une structure de modèles à deux couches.
+
+### Couches de Modèles
+
+| Couche | Dossier | Matérialisation | Rôle |
+| :--- | :--- | :--- | :--- |
+| **Staging** | `models/staging/` | Vue | Nettoie et renomme les colonnes brutes 1-pour-1 depuis les tables sources |
+| **Marts** | `models/marts/` | Table | Modèles enrichis et prêts pour l'analytique, consommés par Grafana |
+
+### Commandes Principales
+
+```bash
+cd dbt_nasa
+
+# Installer / mettre à jour les dépendances
+dbt deps
+
+# Exécuter tous les modèles
+dbt run
+
+# Exécuter un seul modèle
+dbt run --select stg__nasa_neows
+
+# Exécuter une couche entière
+dbt run --select staging
+dbt run --select marts
+
+# Exécuter les tests de qualité des données
+dbt test
+
+# Tester un seul modèle
+dbt test --select mart__nasa_donki_gst
+
+# Build (run + test) — recommandé pour la CI
+dbt build
+
+# Construire uniquement les modèles modifiés depuis le dernier run
+dbt build --select state:modified+
+
+# Prévisualiser le SQL compilé sans l'exécuter
+dbt compile
+
+# Générer et servir la documentation
+dbt docs generate
+dbt docs serve          # ouvre http://localhost:8080
+
+# Nettoyer les artefacts compilés
+dbt clean
+```
+
+### Configuration
+
+| Fichier | Rôle |
+| :--- | :--- |
+| `dbt_project.yml` | Nom du projet, profil, chemins des modèles et matérialisations par défaut |
+| `packages.yml` | Déclare `dbt_utils ≥ 1.3.0` comme dépendance |
+| `package-lock.yml` | Verrouille les versions résolues des packages |
+| `models/staging/_src__*.yml` | Définitions des sources (schéma, vérifications de fraîcheur) |
+| `models/staging/_stg__*.yml` | Contrats des modèles staging et tests de colonnes |
+| `models/marts/_mart__*.yml` | Contrats des modèles marts et tests de colonnes |
+
+### Profil de Connexion
+
+dbt se connecte à PostgreSQL via le profil `dbt_nasa` déclaré dans `~/.dbt/profiles.yml`. Assurez-vous que vos variables d'environnement `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD` et `DB_NAME` (ou les valeurs directes du profil) pointent vers la bonne instance PostgreSQL avant d'exécuter une commande dbt.
 
 ---
 
@@ -259,6 +345,10 @@ uv run pytest tests/ -v
 
 **Déclencher manuellement les transformations dbt :**
 ```bash
-dbt run
-dbt test
+cd dbt_nasa
+
+dbt deps                  # installer les packages dbt (dbt_utils, etc.)
+dbt run                   # construire tous les modèles (vues staging + tables marts)
+dbt test                  # exécuter tous les tests de qualité des données
+dbt build                 # run + test en une seule commande (recommandé)
 ```
