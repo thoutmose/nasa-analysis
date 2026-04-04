@@ -75,7 +75,7 @@ All DAGs share the same standard task structure:
 The average time execution of each DAG takes less than 30 seconds.
 
 #### ⚙️ CI/CD & Operations
-* **CI/CD:** GitHub Actions pipeline with three sequential stages — **Lint → Test → Deploy** — triggered on every push or pull request to `main` and `dev`. See [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
+* **CI/CD:** GitHub Actions pipeline with three sequential stages — **Lint → Test → Open PR** — triggered on every push or pull request to `main` and `dev`. See [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
 * **Monitoring & Observability:** Metrics handled by **Grafana**, with integrated **Slack** alerting.
 * **Code Quality:** **Ruff** enforces Python linting and formatting across the repository.
 
@@ -164,17 +164,8 @@ The project uses **GitHub Actions** ([`.github/workflows/ci-cd.yml`](.github/wor
 | Step | Job | What it does |
 | :---: | :--- | :--- |
 | 1 | **Lint** | Runs `ruff check` and `ruff format --check` on the `dags/` directory. Fails fast on any style or lint error. |
-| 2 | **Test** | Runs `pytest tests/ -v` (19 tests). Only executes if lint passes. |
-| 3 | **Deploy** | SSHes into the target server, runs `git pull` and `utils/build.sh`. Only runs on direct pushes (not PRs). Automatically selects `.env.dev` on `dev` and `.env.prod` on `main`. |
-
-**Required GitHub repository secrets for deploy:**
-
-| Secret | Description |
-| :--- | :--- |
-| `SSH_HOST` | Server IP or hostname |
-| `SSH_USERNAME` | SSH user on the server |
-| `SSH_PRIVATE_KEY` | Private key for SSH authentication |
-| `DEPLOY_PATH` | Absolute path to the project on the server |
+| 2 | **Test** | Runs `pytest tests/ -v`. Only executes if lint passes. |
+| 3 | **Open PR** | Auto-creates a pull request from `dev` → `main`. Only runs on direct pushes to `dev` (not PRs). Uses the built-in `GITHUB_TOKEN` — no custom secrets required. |
 
 ---
 
@@ -200,10 +191,13 @@ cp .env.example .env.dev
 <br>
 
 ```dotenv
+# Airflow authentication
+AIRFLOW__API_AUTH__JWT_SECRET=
+AIRFLOW__API_AUTH__JWT_ISSUER=
+
 # Airflow database
 AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=
 AIRFLOW__CELERY__RESULT_BACKEND=
-AIRFLOW__CORE__FERNET_KEY=
 
 # PostgreSQL
 POSTGRES_USER=
@@ -215,7 +209,7 @@ _AIRFLOW_WWW_USER_USERNAME=
 _AIRFLOW_WWW_USER_PASSWORD=
 
 # NASA API
-NASA_API_KEY=
+AIRFLOW_VAR_NASA_API_KEY=
 
 # Optional
 LOAD_EXAMPLES=false
