@@ -8,6 +8,8 @@
 >
 > **Deployed on a self-hosted infrastructure running on Proxmox.**
 
+**English** | 🌐 [Français](README.fr.md)
+
 </div>
 
 ---
