@@ -1,0 +1,29 @@
+models:
+  - name: mart__nasa_donki_solar_flare
+    description: Solar Flare (FLR) events from NASA DONKI, enriched with class category and date parts
+    columns:
+      - name: flr_id
+        description: Unique identifier for the solar flare event
+        tests:
+          - not_null
+          - unique
+      - name: begin_time
+        description: Start timestamp of the solar flare event
+        tests:
+          - not_null
+      - name: class_type
+        description: Full classification type of the solar flare (e.g. X1.5, M2.3)
+        tests:
+          - not_null
+      - name: class_category
+        description: Single-letter class category of the solar flare (X, M, C, B, A)
+        tests:
+          - not_null
+      - name: event_date
+        description: Date part of the flare begin time
+      - name: event_year
+        description: Year of the solar flare event
+      - name: event_month
+        description: Month of the solar flare event
+      - name: event_day_of_week
+        description: Day of the week of the solar flare event (0=Sunday, 6=Saturday)

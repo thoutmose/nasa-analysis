@@ -1,0 +1,13 @@
+models:
+  - name: stg__nasa_donki_gst
+    description: Staged Geomagnetic Storm (GST) data from NASA DONKI API
+    columns:
+      - name: gst_id
+        description: Unique identifier for the geomagnetic storm event
+        tests:
+          - not_null
+          - unique
+      - name: start_time
+        description: Start time of the geomagnetic storm event
+        tests:
+          - not_null

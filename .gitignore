@@ -223,3 +223,5 @@ __marimo__/
 .claude
 .github/instructions
 logs
+dbt_nasa/.vscode
+dbt_nasa/dbt_packages

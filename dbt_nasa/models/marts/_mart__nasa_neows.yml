@@ -1,0 +1,13 @@
+models:
+  - name: mart__nasa_neows
+    description: Near Earth Object Web Service (NEOWS) data from NASA
+    columns:
+      - name: id
+        description: Unique identifier for the near earth object
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: Name of the near earth object
+        tests:
+          - not_null

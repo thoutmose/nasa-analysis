@@ -1,0 +1,36 @@
+models:
+  - name: mart__nasa_meteorite_landings
+    description: NASA Meteorite Landings dataset enriched with mass category and typed columns
+    columns:
+      - name: id
+        description: Unique identifier for the meteorite landing record
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: Name of the meteorite
+        tests:
+          - not_null
+      - name: nametype
+        description: Name type classification of the meteorite
+      - name: recclass
+        description: Classification of the meteorite
+      - name: mass_grams
+        description: Mass of the meteorite in grams, cast to numeric
+      - name: fall
+        description: Whether the meteorite was observed falling (Fell) or found (Found)
+      - name: landing_year
+        description: Year the meteorite was found or observed to fall, cast to integer
+      - name: latitude
+        description: Latitude of the meteorite landing location, cast to numeric
+      - name: longitude
+        description: Longitude of the meteorite landing location, cast to numeric
+      - name: mass_category
+        description: >
+          Bucketed mass category: very_small (<10g), small (10-100g),
+          medium (100-1000g), large (1000-10000g), very_large (>10000g)
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['very_small', 'small', 'medium', 'large', 'very_large']

@@ -1,0 +1,29 @@
+models:
+  - name: stg__nasa_meteorite_landings
+    description: Staged NASA Meteorite Landings dataset
+    columns:
+      - name: id
+        description: Unique identifier for the meteorite landing record
+        tests:
+          - not_null
+          - unique
+      - name: name
+        description: Name of the meteorite
+        tests:
+          - not_null
+      - name: nametype
+        description: Name type classification of the meteorite
+      - name: recclass
+        description: Classification of the meteorite
+      - name: mass
+        description: Mass of the meteorite in grams
+      - name: fall
+        description: Whether the meteorite was observed falling or found
+      - name: year
+        description: Year the meteorite was found or observed to fall
+      - name: reclat
+        description: Latitude of the meteorite landing location
+      - name: reclong
+        description: Longitude of the meteorite landing location
+      - name: geolocation
+        description: Geolocation of the meteorite landing
