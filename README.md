@@ -8,6 +8,8 @@
 >
 > **Deployed on a self-hosted infrastructure running on Proxmox.**
 
+**English** | 🌐 [Français](README.fr.md)
+
 </div>
 
 ---
@@ -75,7 +77,7 @@ All DAGs share the same standard task structure:
 The average time execution of each DAG takes less than 30 seconds.
 
 #### ⚙️ CI/CD & Operations
-* **CI/CD:** GitHub Actions pipeline with three sequential stages — **Lint → Test → Deploy** — triggered on every push or pull request to `main` and `dev`. See [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
+* **CI/CD:** GitHub Actions pipeline with three sequential stages — **Lint → Test → Open PR** — triggered on every push or pull request to `main` and `dev`. See [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml).
 * **Monitoring & Observability:** Metrics handled by **Grafana**, with integrated **Slack** alerting.
 * **Code Quality:** **Ruff** enforces Python linting and formatting across the repository.
 
@@ -99,7 +101,7 @@ The average time execution of each DAG takes less than 30 seconds.
 | **Orchestration** | Apache Airflow (CeleryExecutor) | `3.1.8` |
 | **Ingestion** | dltHub | `1.23` |
 | **Data Warehouse** | PostgreSQL | `17` |
-| **Transformations** | dbt Core | `1.11.7` |
+| **Transformations** | dbt Fusion | `1.0.0.40.15` |
 | **Message Broker** | Redis | `7.2` |
 | **Code Quality** | Ruff | `0.15.7` |
 | **DB Administration** | PgAdmin | `4.9.13` |
@@ -138,6 +140,23 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   ├── nasa_donki_solar_flare_dag.py                 # Airflow DAG for DONKI Solar Flare data
 │   ├── nasa_meteorite_landings_dataset_dag.py        # Airflow DAG for Meteorite Landings data
 │   └── nasa_neows_dag.py                             # Airflow DAG for NASA NeoWs data
+├── dbt_nasa                       # dbt Fusion project directory
+│   ├── dbt_project.yml            # dbt project configuration
+│   ├── package-lock.yml           # dbt package lock file
+│   ├── packages.yml               # dbt package dependencies
+│   ├── macros                     # dbt macro definitions
+│   ├── models                     # dbt SQL models
+│   │   ├── staging                # Staging models (materialized as views)
+│   │   │   ├── stg__nasa_donki_gst.sql
+│   │   │   ├── stg__nasa_donki_solar_flare.sql
+│   │   │   ├── stg__nasa_meteorite_landings.sql
+│   │   │   └── stg__nasa_neows.sql
+│   │   └── marts                  # Mart models (materialized as tables)
+│   │       ├── mart__nasa_donki_gst.sql
+│   │       ├── mart__nasa_donki_solar_flare.sql
+│   │       ├── mart__nasa_meteorite_landings.sql
+│   │       └── mart__nasa_neows.sql
+│   └── dbt_packages               # Installed dbt packages                               [gitignored]
 ├── docker-compose.yaml            # Docker Compose configuration for services
 ├── img                            # Image assets directory
 │   ├── airflow_dag_example.png            # Example Airflow DAG screenshot
@@ -145,15 +164,86 @@ nasa-analysis/                     # Root project directory for NASA data analys
 │   └── nasa_project_infrastructure.png    # Infrastructure diagram
 ├── pyproject.toml                 # Python project configuration (build system, tools)
 ├── logs                           # Logging files
-├── requirements.txt               # Python dependencies├── tests                          # Unit tests (pytest)
+├── requirements.txt               # Python dependencies
+├── tests                          # Unit tests (pytest)
 │   ├── test_donki_gst_pipeline.py
 │   ├── test_donki_solar_flare_pipeline.py
 │   ├── test_meteorite_pipeline.py
-│   └── test_neows_pipeline.py├── utils                          # Utility scripts directory
+│   └── test_neows_pipeline.py
+├── utils                          # Utility scripts directory
 │   ├── build.sh                   # Build automation script
 │   └── linting.sh                 # Code linting script
 └── uv.lock                        # Lock file for UV package manager (Python)
 ```
+
+---
+
+## 🏛️ dbt — Transformations
+
+The `dbt_nasa/` project uses **dbt Fusion** and follows a two-layer model structure.
+
+### Model Layers
+
+| Layer | Folder | Materialization | Role |
+| :--- | :--- | :--- | :--- |
+| **Staging** | `models/staging/` | View | Cleans and renames raw columns 1-to-1 from the source tables |
+| **Marts** | `models/marts/` | Table | Enriched, analytics-ready models consumed by Grafana |
+
+### Key Commands
+
+```bash
+cd dbt_nasa
+
+# Install / update dependencies
+dbt deps
+
+# Run all models
+dbt run
+
+# Run a single model
+dbt run --select stg__nasa_neows
+
+# Run an entire layer
+dbt run --select staging
+dbt run --select marts
+
+# Execute data quality tests
+dbt test
+
+# Test a single model
+dbt test --select mart__nasa_donki_gst
+
+# Build (run + test) — recommended for CI
+dbt build
+
+# Build only models that changed since the last run
+dbt build --select state:modified+
+
+# Preview compiled SQL without executing
+dbt compile
+
+# Generate and serve documentation
+dbt docs generate
+dbt docs serve          # opens http://localhost:8080
+
+# Clean compiled artefacts
+dbt clean
+```
+
+### Configuration
+
+| File | Purpose |
+| :--- | :--- |
+| `dbt_project.yml` | Project name, profile, model paths, and materialization defaults |
+| `packages.yml` | Declares `dbt_utils ≥ 1.3.0` as a dependency |
+| `package-lock.yml` | Locks the resolved package versions |
+| `models/staging/_src__*.yml` | Source definitions (schema, freshness checks) |
+| `models/staging/_stg__*.yml` | Staging model contracts and column tests |
+| `models/marts/_mart__*.yml` | Mart model contracts and column tests |
+
+### Connection Profile
+
+dbt connects to PostgreSQL via the `dbt_nasa` profile declared in `~/.dbt/profiles.yml`. Make sure your `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` environment variables (or direct profile values) point to the correct PostgreSQL instance before running any dbt command.
 
 ---
 
@@ -164,17 +254,8 @@ The project uses **GitHub Actions** ([`.github/workflows/ci-cd.yml`](.github/wor
 | Step | Job | What it does |
 | :---: | :--- | :--- |
 | 1 | **Lint** | Runs `ruff check` and `ruff format --check` on the `dags/` directory. Fails fast on any style or lint error. |
-| 2 | **Test** | Runs `pytest tests/ -v` (19 tests). Only executes if lint passes. |
-| 3 | **Deploy** | SSHes into the target server, runs `git pull` and `utils/build.sh`. Only runs on direct pushes (not PRs). Automatically selects `.env.dev` on `dev` and `.env.prod` on `main`. |
-
-**Required GitHub repository secrets for deploy:**
-
-| Secret | Description |
-| :--- | :--- |
-| `SSH_HOST` | Server IP or hostname |
-| `SSH_USERNAME` | SSH user on the server |
-| `SSH_PRIVATE_KEY` | Private key for SSH authentication |
-| `DEPLOY_PATH` | Absolute path to the project on the server |
+| 2 | **Test** | Runs `pytest tests/ -v`. Only executes if lint passes. |
+| 3 | **Open PR** | Auto-creates a pull request from `dev` → `main`. Only runs on direct pushes to `dev` (not PRs). Uses the built-in `GITHUB_TOKEN` — no custom secrets required. |
 
 ---
 
@@ -200,10 +281,13 @@ cp .env.example .env.dev
 <br>
 
 ```dotenv
+# Airflow authentication
+AIRFLOW__API_AUTH__JWT_SECRET=
+AIRFLOW__API_AUTH__JWT_ISSUER=
+
 # Airflow database
 AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=
 AIRFLOW__CELERY__RESULT_BACKEND=
-AIRFLOW__CORE__FERNET_KEY=
 
 # PostgreSQL
 POSTGRES_USER=
@@ -215,7 +299,7 @@ _AIRFLOW_WWW_USER_USERNAME=
 _AIRFLOW_WWW_USER_PASSWORD=
 
 # NASA API
-NASA_API_KEY=
+AIRFLOW_VAR_NASA_API_KEY=
 
 # Optional
 LOAD_EXAMPLES=false
@@ -260,6 +344,10 @@ uv run pytest tests/ -v
 
 **Trigger dbt transformations manually:**
 ```bash
-dbt run
-dbt test
+cd dbt_nasa
+
+dbt deps                  # install dbt packages (dbt_utils, etc.)
+dbt run                   # build all models (staging views + mart tables)
+dbt test                  # run all data quality tests
+dbt build                 # run + test in a single command (recommended)
 ```

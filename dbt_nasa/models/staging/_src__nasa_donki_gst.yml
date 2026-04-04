@@ -1,0 +1,6 @@
+sources:
+  - name: nasa_donki_gst
+    description: Geomagnetic Storm (GST) data from NASA DONKI API
+    schema: nasa_db
+    tables:
+      - name: nasa_donki_gst_response

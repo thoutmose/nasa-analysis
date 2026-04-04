@@ -1,0 +1,6 @@
+sources:
+  - name: nasa_meteorite_landings
+    description: NASA Meteorite Landings dataset
+    schema: nasa_db
+    tables:
+      - name: meteorite_landings

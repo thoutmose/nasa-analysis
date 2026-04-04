@@ -1,0 +1,17 @@
+models:
+  - name: stg__nasa_donki_solar_flare
+    description: Staged Solar Flare (FLR) data from NASA DONKI API
+    columns:
+      - name: flr_id
+        description: Unique identifier for the solar flare event
+        tests:
+          - not_null
+          - unique
+      - name: begin_time
+        description: Start time of the solar flare event
+        tests:
+          - not_null
+      - name: class_type
+        description: Classification type of the solar flare
+        tests:
+          - not_null
