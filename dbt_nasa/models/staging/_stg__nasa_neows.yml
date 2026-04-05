@@ -7,7 +7,31 @@ models:
         tests:
           - not_null
           - unique
+      - name: neo_reference_id
+        description: Unique identifier for the near earth object
+        tests:
+          - not_null
+          - unique
       - name: name
         description: Name of the near earth object
         tests:
           - not_null
+      - name: is_potentially_hazardous_asteroid
+        description: Boolean defined by NASA to define if an asteroid is hazardous
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: boolean
+
+      - name: estimated_diameter_min
+        description: minimal estimated diameter in meters (m.) of the asteroid
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: double precision
+      - name: estimated_diameter_max
+        description: maximum estimated diameter in meters (m.) of the asteroid
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              arguments:
+                column_type: double precision
