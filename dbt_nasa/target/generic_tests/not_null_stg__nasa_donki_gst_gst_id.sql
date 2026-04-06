@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="gst_id", model=get_where_subquery(ref('stg__nasa_donki_gst'))) }}

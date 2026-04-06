@@ -1,0 +1,1 @@
+{{ test_accepted_values(column_name="mass_category", model=get_where_subquery(ref('mart__nasa_meteorite_landings')), values=["very_small","small","medium","large","very_large"]) }}

@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="name", model=get_where_subquery(ref('mart__nasa_meteorite_landings'))) }}

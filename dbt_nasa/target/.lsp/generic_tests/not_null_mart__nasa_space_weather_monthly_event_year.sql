@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="event_year", model=get_where_subquery(ref('mart__nasa_space_weather_monthly'))) }}

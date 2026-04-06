@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="asteroid_count", model=get_where_subquery(ref('mart__nasa_neows_hazard_summary'))) }}

@@ -268,11 +268,33 @@ dbt compile
 
 # Générer et servir la documentation
 dbt docs generate
-dbt docs serve          # ouvre http://localhost:8080
+dbt docs serve --port 8081  # ouvre http://localhost:8081
 
 # Nettoyer les artefacts compilés
 dbt clean
 ```
+
+### Catalogue de données
+
+`dbt docs generate` produit un catalogue de données entièrement interactif à partir des modèles, sources, tests et descriptions de colonnes du projet. Il écrit trois fichiers dans `dbt_nasa/target/` : `manifest.json`, `catalog.json` et `index.html`.
+
+Pour parcourir le catalogue en local :
+
+```bash
+cd dbt_nasa
+dbt docs generate
+dbt docs serve --port 8081
+```
+
+Puis ouvrez **[http://localhost:8081](http://localhost:8081)** dans votre navigateur.
+
+Le catalogue offre :
+- **Graphe de lignage** — DAG interactif montrant chaque modèle, source et dépendance de test
+- **Explorateur de modèles** — documentation par modèle, types de colonnes et tests appliqués
+- **Fraîcheur des sources** — statut de péremption pour chaque table source
+- **Recherche** — recherche en texte intégral sur tous les noms de modèles et de colonnes
+
+> Les artefacts `target/` générés sont committés dans le dépôt afin que le catalogue puisse être prévisualisé sans connexion Snowflake active, en servant `dbt_nasa/target/` avec n'importe quel serveur de fichiers statiques (ex. `python -m http.server 8081` depuis ce dossier).
 
 ### Configuration
 
