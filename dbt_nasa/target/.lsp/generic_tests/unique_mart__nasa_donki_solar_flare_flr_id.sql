@@ -1,0 +1,1 @@
+{{ test_unique(column_name="flr_id", model=get_where_subquery(ref('mart__nasa_donki_solar_flare'))) }}

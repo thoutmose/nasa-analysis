@@ -1,0 +1,1 @@
+{{ test_accepted_values(column_name="class_category", model=get_where_subquery(ref('mart__nasa_solar_flare_class_summary')), values=["X","M","C","B","A"]) }}

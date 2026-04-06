@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="flare_count", model=get_where_subquery(ref('mart__nasa_solar_flare_class_summary'))) }}

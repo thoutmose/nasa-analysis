@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="is_potentially_hazardous_asteroid", model=get_where_subquery(ref('mart__nasa_neows_hazard_summary'))) }}

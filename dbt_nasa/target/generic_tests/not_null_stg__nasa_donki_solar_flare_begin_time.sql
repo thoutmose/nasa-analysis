@@ -1,0 +1,1 @@
+{{ test_not_null(column_name="begin_time", model=get_where_subquery(ref('stg__nasa_donki_solar_flare'))) }}

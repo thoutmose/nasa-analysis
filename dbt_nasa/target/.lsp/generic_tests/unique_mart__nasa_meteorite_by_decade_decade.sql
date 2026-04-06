@@ -1,0 +1,1 @@
+{{ test_unique(column_name="decade", model=get_where_subquery(ref('mart__nasa_meteorite_by_decade'))) }}
