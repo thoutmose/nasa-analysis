@@ -296,6 +296,12 @@ Le catalogue offre :
 
 > Les artefacts `target/` générés sont committés dans le dépôt afin que le catalogue puisse être prévisualisé sans connexion Snowflake active, en servant `dbt_nasa/target/` avec n'importe quel serveur de fichiers statiques (ex. `python -m http.server 8081` depuis ce dossier).
 
+<div align="center">
+  <img src="img/dbt_doc_generate_website.png" alt="dbt docs generate — catalogue de données interactif" width="100%">
+</div>
+
+> **Ce que cette capture d'écran montre :** Le catalogue de données interactif généré par `dbt docs generate`, servi localement sur le port 8081. Le panneau de gauche liste chaque **Source** (`nasa_donki_gst`, `nasa_donki_solar_flare`, `nasa_meteorite_landings`, `nasa_neows`) et chaque nœud du **Projet** (`dbt_nasa` models, les quatre tests de qualité des données personnalisés, et les trois packages tiers `dbt_utils`, `dbt_expectations`, `dbt_date`). Le panneau principal affiche la table source `nasa_neows.nasa_neows_response` — exposant les métadonnées au niveau de la table (propriétaire `DLT_LOADER_ROLE`, chemin de relation dans Snowflake, taille approximative 20 Ko, dernière modification, nombre de lignes 105) ainsi qu'un inventaire complet des colonnes avec leurs types inférés (`TEXT`, `BOOLEAN`, `FLOAT`). Chaque modèle, source et test du projet est consultable ici sans nécessiter de connexion Snowflake active.
+
 ### Configuration
 
 [...]
