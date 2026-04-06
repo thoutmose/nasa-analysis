@@ -1,0 +1,23 @@
+models:
+  - name: mart__nasa_neows_hazard_summary
+    description: "{{ doc('mart__nasa_neows_hazard_summary') }}"
+    columns:
+      - name: is_potentially_hazardous_asteroid
+        description: "{{ doc('col_is_potentially_hazardous_asteroid') }}"
+        tests:
+          - not_null
+          - unique
+      - name: asteroid_count
+        description: Total number of near-Earth objects in this hazard category
+        tests:
+          - not_null
+      - name: avg_diameter_min_m
+        description: Average minimum estimated diameter in metres for this hazard category
+      - name: avg_diameter_max_m
+        description: Average maximum estimated diameter in metres for this hazard category
+      - name: min_diameter_m
+        description: Smallest minimum estimated diameter in metres for this hazard category
+      - name: max_diameter_m
+        description: Largest maximum estimated diameter in metres for this hazard category
+      - name: avg_absolute_magnitude_h
+        description: Average absolute magnitude (H) for this hazard category

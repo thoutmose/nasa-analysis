@@ -1,9 +1,9 @@
 models:
   - name: mart__nasa_donki_solar_flare
-    description: Solar Flare (FLR) events from NASA DONKI, enriched with class category and date parts
+    description: "{{ doc('mart__nasa_donki_solar_flare') }}"
     columns:
       - name: flr_id
-        description: Unique identifier for the solar flare event
+        description: "{{ doc('col_flr_id') }}"
         tests:
           - not_null
           - unique
@@ -12,11 +12,11 @@ models:
         tests:
           - not_null
       - name: class_type
-        description: Full classification type of the solar flare (e.g. X1.5, M2.3)
+        description: "{{ doc('col_class_type') }}"
         tests:
           - not_null
       - name: class_category
-        description: Single-letter class category of the solar flare (X, M, C, B, A)
+        description: "{{ doc('col_class_category') }}"
         tests:
           - not_null
       - name: event_date
@@ -24,6 +24,6 @@ models:
       - name: event_year
         description: Year of the solar flare event
       - name: event_month
-        description: Month of the solar flare event
+        description: Month of the solar flare event (1=January, 12=December)
       - name: event_day_of_week
         description: Day of the week of the solar flare event (0=Sunday, 6=Saturday)

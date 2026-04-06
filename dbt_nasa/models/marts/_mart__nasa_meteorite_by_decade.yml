@@ -1,0 +1,19 @@
+models:
+  - name: mart__nasa_meteorite_by_decade
+    description: "{{ doc('mart__nasa_meteorite_by_decade') }}"
+    columns:
+      - name: decade
+        description: "{{ doc('col_decade') }}"
+        tests:
+          - not_null
+          - unique
+      - name: landing_count
+        description: Number of meteorite landings recorded in this decade
+        tests:
+          - not_null
+      - name: avg_mass_grams
+        description: Average meteorite mass in grams for this decade
+      - name: total_mass_grams
+        description: Total combined meteorite mass in grams for this decade
+      - name: distinct_class_count
+        description: Number of distinct mineralogical classifications recorded in this decade

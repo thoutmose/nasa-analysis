@@ -78,9 +78,9 @@ def nasa_donki_source(
 
 def run_pipeline() -> Any:
     pipeline = dlt.pipeline(
-        pipeline_name="nasa_donki",
-        destination="postgres",
-        dataset_name="nasa_db",
+        pipeline_name="nasa_donki_solar_flare",
+        destination=dlt.destinations.snowflake(enable_atomic_swap=True),
+        dataset_name="nasa_donki_solar_flare",
     )
 
     load_info = pipeline.run(nasa_donki_source())

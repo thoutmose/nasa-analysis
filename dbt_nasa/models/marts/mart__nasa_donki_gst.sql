@@ -4,5 +4,5 @@ SELECT
     DATE(start_time)                        AS event_date,
     EXTRACT(YEAR FROM start_time)           AS event_year,
     EXTRACT(MONTH FROM start_time)          AS event_month,
-    EXTRACT(DOW FROM start_time)            AS event_day_of_week
+    DAYOFWEEK(start_time)                   AS event_day_of_week
 FROM {{ ref('stg__nasa_donki_gst') }}

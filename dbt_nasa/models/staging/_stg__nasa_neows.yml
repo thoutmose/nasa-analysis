@@ -1,9 +1,14 @@
 models:
   - name: stg__nasa_neows
-    description: Staged Near Earth Object Web Service (NEOWS) data from NASA
+    description: "{{ doc('stg__nasa_neows') }}"
     columns:
       - name: id
-        description: Unique identifier for the near earth object
+        description: "{{ doc('col_neo_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: neo_reference_id
+        description: "{{ doc('col_neo_id') }}"
         tests:
           - not_null
           - unique
@@ -11,3 +16,21 @@ models:
         description: Name of the near earth object
         tests:
           - not_null
+      - name: absolute_magnitude_h
+        description: "{{ doc('col_absolute_magnitude_h') }}"
+      - name: is_potentially_hazardous_asteroid
+        description: "{{ doc('col_is_potentially_hazardous_asteroid') }}"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: boolean
+
+      - name: estimated_diameter_min
+        description: "{{ doc('col_estimated_diameter_min') }}"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: float
+      - name: estimated_diameter_max
+        description: "{{ doc('col_estimated_diameter_max') }}"
+        tests:
+          - dbt_expectations.expect_column_values_to_be_of_type:
+              column_type: float

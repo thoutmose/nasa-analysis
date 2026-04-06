@@ -47,7 +47,9 @@ def nasa_source():
 
 def run_pipeline():
     pipeline = dlt.pipeline(
-        pipeline_name="nasa_meteorites", destination="postgres", dataset_name="nasa_db"
+        pipeline_name="nasa_meteorites",
+        destination=dlt.destinations.snowflake(enable_atomic_swap=True),
+        dataset_name="nasa_meteorite_landings",
     )
 
     load_info = pipeline.run(nasa_source())

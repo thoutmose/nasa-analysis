@@ -1,6 +1,7 @@
 sources:
   - name: nasa_donki_solar_flare
     description: Solar Flare (FLR) data from NASA DONKI API
-    schema: nasa_db
+    database: dw_nasa_dev
+    schema: nasa_donki_solar_flare
     tables:
       - name: nasa_donki_response

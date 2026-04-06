@@ -225,3 +225,5 @@ __marimo__/
 logs
 dbt_nasa/.vscode
 dbt_nasa/dbt_packages
+dbt_nasa/.user.yml
+dbt_nasa/profiles.yml

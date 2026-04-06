@@ -4,9 +4,16 @@ profile: dbt_nasa
 
 model-paths: ["models"]
 macro-paths: ["macros"]
+test-paths: ["tests"]
 clean-targets:
   - "target"
   - "dbt_packages"
+
+# Snowflake identifiers are case-insensitive when unquoted.
+quoting:
+  database: false
+  schema: false
+  identifier: false
 
 models:
   dbt_nasa:

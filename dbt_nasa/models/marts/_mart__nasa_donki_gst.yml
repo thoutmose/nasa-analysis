@@ -1,9 +1,9 @@
 models:
   - name: mart__nasa_donki_gst
-    description: Geomagnetic Storm (GST) events from NASA DONKI, enriched with date parts
+    description: "{{ doc('mart__nasa_donki_gst') }}"
     columns:
       - name: gst_id
-        description: Unique identifier for the geomagnetic storm event
+        description: "{{ doc('col_gst_id') }}"
         tests:
           - not_null
           - unique
@@ -16,6 +16,6 @@ models:
       - name: event_year
         description: Year of the storm event
       - name: event_month
-        description: Month of the storm event
+        description: Month of the storm event (1=January, 12=December)
       - name: event_day_of_week
         description: Day of the week of the storm event (0=Sunday, 6=Saturday)

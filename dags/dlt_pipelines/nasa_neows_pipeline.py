@@ -94,8 +94,8 @@ def nasa_neows_source(
 def run_pipeline() -> Any:
     pipeline = dlt.pipeline(
         pipeline_name="nasa_neows",
-        destination="postgres",
-        dataset_name="nasa_db",
+        destination=dlt.destinations.snowflake(enable_atomic_swap=True),
+        dataset_name="nasa_neows",
     )
 
     load_info = pipeline.run(nasa_neows_source())
