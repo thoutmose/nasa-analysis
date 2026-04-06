@@ -1,9 +1,14 @@
 models:
   - name: mart__nasa_neows
-    description: Near Earth Object Web Service (NEOWS) data from NASA
+    description: "{{ doc('mart__nasa_neows') }}"
     columns:
       - name: id
-        description: Unique identifier for the near earth object
+        description: "{{ doc('col_neo_id') }}"
+        tests:
+          - not_null
+          - unique
+      - name: neo_reference_id
+        description: "{{ doc('col_neo_id') }}"
         tests:
           - not_null
           - unique
@@ -11,3 +16,11 @@ models:
         description: Name of the near earth object
         tests:
           - not_null
+      - name: absolute_magnitude_h
+        description: Absolute magnitude (H) of the asteroid used to estimate diameter
+      - name: is_potentially_hazardous_asteroid
+        description: "{{ doc('col_is_potentially_hazardous_asteroid') }}"
+      - name: estimated_diameter_min
+        description: "{{ doc('col_estimated_diameter_min') }}"
+      - name: estimated_diameter_max
+        description: "{{ doc('col_estimated_diameter_max') }}"

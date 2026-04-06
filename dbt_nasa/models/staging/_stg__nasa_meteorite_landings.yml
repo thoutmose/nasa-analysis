@@ -1,6 +1,6 @@
 models:
   - name: stg__nasa_meteorite_landings
-    description: Staged NASA Meteorite Landings dataset
+    description: "{{ doc('stg__nasa_meteorite_landings') }}"
     columns:
       - name: id
         description: Unique identifier for the meteorite landing record
@@ -12,18 +12,18 @@ models:
         tests:
           - not_null
       - name: nametype
-        description: Name type classification of the meteorite
+        description: Name type classification of the meteorite (Valid or Relict)
       - name: recclass
-        description: Classification of the meteorite
+        description: Mineralogical classification of the meteorite
       - name: mass
-        description: Mass of the meteorite in grams
+        description: "{{ doc('col_mass_grams') }}"
       - name: fall
-        description: Whether the meteorite was observed falling or found
+        description: Whether the meteorite was observed falling (Fell) or found (Found)
       - name: year
-        description: Year the meteorite was found or observed to fall
+        description: Year the meteorite was found or observed to fall (raw string)
       - name: reclat
         description: Latitude of the meteorite landing location
       - name: reclong
         description: Longitude of the meteorite landing location
       - name: geolocation
-        description: Geolocation of the meteorite landing
+        description: Geolocation of the meteorite landing as a coordinate string

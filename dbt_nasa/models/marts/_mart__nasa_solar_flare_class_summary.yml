@@ -1,0 +1,22 @@
+models:
+  - name: mart__nasa_solar_flare_class_summary
+    description: "{{ doc('mart__nasa_solar_flare_class_summary') }}"
+    columns:
+      - name: event_year
+        description: Year of the solar flare events
+        tests:
+          - not_null
+      - name: event_month
+        description: Month of the solar flare events (1=January, 12=December)
+        tests:
+          - not_null
+      - name: class_category
+        description: "{{ doc('col_class_category') }}"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['X', 'M', 'C', 'B', 'A']
+      - name: flare_count
+        description: Number of solar flare events in this year/month/class bucket
+        tests:
+          - not_null

@@ -8,4 +8,4 @@ SELECT
         AS estimated_diameter_min,
     estimated_diameter__meters__estimated_diameter_max AS estimated_diameter_max
 FROM
-    {{ source('nasa_neows', 'nasa_neows_response') }}
+    {{ ref('base_nasa_neows_nasa_neows_response') }}

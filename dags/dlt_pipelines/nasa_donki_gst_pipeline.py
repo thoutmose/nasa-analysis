@@ -79,8 +79,8 @@ def nasa_donki_gst_source(
 def run_pipeline() -> Any:
     pipeline = dlt.pipeline(
         pipeline_name="nasa_donki_gst",
-        destination="postgres",
-        dataset_name="nasa_db",
+        destination=dlt.destinations.snowflake(enable_atomic_swap=True),
+        dataset_name="nasa_donki_gst",
     )
 
     load_info = pipeline.run(nasa_donki_gst_source())

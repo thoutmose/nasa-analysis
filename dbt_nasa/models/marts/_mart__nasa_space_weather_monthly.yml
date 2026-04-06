@@ -1,0 +1,20 @@
+models:
+  - name: mart__nasa_space_weather_monthly
+    description: "{{ doc('mart__nasa_space_weather_monthly') }}"
+    columns:
+      - name: event_year
+        description: Year of the space weather events
+        tests:
+          - not_null
+      - name: event_month
+        description: Month of the space weather events (1=January, 12=December)
+        tests:
+          - not_null
+      - name: gst_count
+        description: Number of geomagnetic storm events in this year/month
+        tests:
+          - not_null
+      - name: flare_count
+        description: Number of solar flare events in this year/month
+        tests:
+          - not_null

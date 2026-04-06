@@ -10,4 +10,4 @@ SELECT
     reclong,
     geolocation
 FROM
-    {{ source('nasa_meteorite_landings', 'meteorite_landings') }}
+    {{ ref('base_nasa_meteorite_landings_meteorite_landings') }}

@@ -3,18 +3,18 @@ with source as (
   ),
   renamed as (
       select
-          {{ adapter.quote("name") }},
-        {{ adapter.quote("id") }},
-        {{ adapter.quote("nametype") }},
-        {{ adapter.quote("recclass") }},
-        {{ adapter.quote("mass") }},
-        {{ adapter.quote("fall") }},
-        {{ adapter.quote("year") }},
-        {{ adapter.quote("reclat") }},
-        {{ adapter.quote("reclong") }},
-        {{ adapter.quote("geolocation") }},
-        {{ adapter.quote("_dlt_load_id") }},
-        {{ adapter.quote("_dlt_id") }}
+          name,
+        id,
+        nametype,
+        recclass,
+        mass,
+        fall,
+        year,
+        reclat,
+        reclong,
+        geolocation,
+        _dlt_load_id,
+        _dlt_id
 
       from source
   )

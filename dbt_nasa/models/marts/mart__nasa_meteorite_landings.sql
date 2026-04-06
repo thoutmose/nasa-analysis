@@ -5,7 +5,7 @@ SELECT
     recclass,
     mass                                    AS mass_grams,
     fall,
-    NULLIF(year, '')::INTEGER               AS landing_year,
+    TRY_CAST(NULLIF(year, '') AS INTEGER)   AS landing_year,
     reclat                                  AS latitude,
     reclong                                 AS longitude,
     CASE

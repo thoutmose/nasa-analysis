@@ -5,19 +5,28 @@ description = "An end-to-end data engineering project that collects, transforms,
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "dbt-core>=1.9.0",
-    "dlt[hub,postgres,workspace]>=1.23.0",
+    "dlt[hub,postgres,snowflake,workspace]>=1.23.0",
     "python-dotenv>=1.2.2",
     "requests>=2.32.5",
-    "ruff>=0.15.7",
 ]
 
 [project.optional-dependencies]
 dev = [
+    "dbt-core>=1.9.0",
+    "dbt-snowflake>=1.11.3",
+    "deptry>=0.25.1",
     "pytest>=8.0.0",
     "pytest-mock>=3.14.0",
+    "ruff>=0.15.7",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["dags"]
 testpaths = ["tests"]
+
+[tool.deptry]
+# airflow is installed in the Airflow Docker image, not via pyproject.toml
+# dlt_pipelines is a local module inside dags/ not a pip package
+known_first_party = ["dlt_pipelines"]
+per_rule_ignores = { DEP001 = ["airflow"], DEP002 = ["dbt-core", "dbt-snowflake", "deptry", "ruff", "pytest", "pytest-mock"] }
+exclude = ["dbt_nasa", ".venv"]

@@ -1,6 +1,9 @@
 SELECT
     flr_id,
     begin_time,
-    class_type
+    peak_time,
+    end_time,
+    class_type,
+    source_location
 FROM
-    {{ source('nasa_donki_solar_flare', 'nasa_donki_response') }}
+    {{ ref('base_nasa_donki_solar_flare_nasa_donki_response') }}

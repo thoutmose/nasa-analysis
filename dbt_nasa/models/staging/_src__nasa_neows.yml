@@ -1,6 +1,7 @@
 sources:
   - name: nasa_neows
     description: Near Earth Object Web Service (NEOWS) by NASA
-    schema: nasa_db
+    database: dw_nasa_dev
+    schema: nasa_neows
     tables:
       - name: nasa_neows_response

@@ -1,17 +1,23 @@
 models:
   - name: stg__nasa_donki_solar_flare
-    description: Staged Solar Flare (FLR) data from NASA DONKI API
+    description: "{{ doc('stg__nasa_donki_solar_flare') }}"
     columns:
       - name: flr_id
-        description: Unique identifier for the solar flare event
+        description: "{{ doc('col_flr_id') }}"
         tests:
           - not_null
           - unique
       - name: begin_time
-        description: Start time of the solar flare event
+        description: Start timestamp of the solar flare event
         tests:
           - not_null
+      - name: peak_time
+        description: Timestamp of peak X-ray flux intensity for the solar flare event
+      - name: end_time
+        description: Timestamp when the solar flare event ended
       - name: class_type
-        description: Classification type of the solar flare
+        description: "{{ doc('col_class_type') }}"
         tests:
           - not_null
+      - name: source_location
+        description: Active region location on the solar disk in Stonyhurst heliographic coordinates (e.g. N15W30)
